@@ -169,6 +169,7 @@ public:
             cout << t->first << t->second << endl;;
         }
         cout.rdbuf(coutbuf);
+        this->AllEdgesGoingIntoKeyNode.clear();
     }
 
     bool readFiles(string fileName)
