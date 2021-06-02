@@ -32,7 +32,6 @@ class Graph{
     unordered_map <int, vector<int>> GraphSchemeReverse;
     vector<int>postOrder;
     unordered_map<int, int> postOrderWithIndex;
-    unordered_map<int, int> nodeHasPostorder;
 
 
 public:
@@ -96,34 +95,42 @@ public:
             {
                 allChildren->insert(AllEdgesGoingIntoKeyNode[currnode].begin(), AllEdgesGoingIntoKeyNode[currnode].end());
                 alreadyVisited[currnode] = true;
-            }
-            for (int iterator : this->GraphSchemeReverse[currnode])
+            }else
             {
-                if(!alreadyVisited[iterator])
+                for (int iterator : this->GraphSchemeReverse[currnode])
                 {
-                Q.push(iterator);
-                alreadyVisited[iterator] = true;
-
+                    if(!alreadyVisited[iterator])
+                    {
+                        Q.push(iterator);
+                        alreadyVisited[iterator] = true;
+                    }
                 }
             }
+            
         }
     return allChildren;
     };
 
     void graphPropagation(string fileName, bool createReverseScheme)
     {
+        // specifiy the file path for the result data
         string filePath = createReverseScheme ?   "./src/interval_schemes/" + fileName + "_reverse_interval_scheme.txt" :
             "./src/interval_schemes/" + fileName + "_interval_scheme.txt";
         ofstream out(filePath);
 
+        // map to store the results from the open mp for loop
         unordered_map<int, string> eval;
+
+
         #pragma omp parallel for
+        //Iterating trough every vertices to get the interval scheme for postOrderNode
         for (int postOrderNode : postOrder)
         {
+            // Get all parents/children of postOderNode
             unordered_set<int>* ParentNodes = new unordered_set<int>;
             ParentNodes = createReverseScheme ? getAllChildren(postOrderNode) : getAllParents(postOrderNode);
 
-            vector<IntervalScheme> newCompressedIntervalScheme;
+            // Mark every parent/child of a node with a set bit
             boost::dynamic_bitset<> IntervalBitsetArray(postOrder.size() + 2);
             for (unordered_set<int>::iterator node = ParentNodes->begin(); node != ParentNodes->end(); node++)
             {
@@ -132,8 +139,10 @@ public:
             delete ParentNodes;
 
 
+            // Compress the bitset into the regular interval scheme
             int pre = 0;
             int post = 0;
+            vector<IntervalScheme> newCompressedIntervalScheme;
             for (boost::dynamic_bitset<>::size_type bit = 1; bit < IntervalBitsetArray.size() - 1; bit++) {
                 if (IntervalBitsetArray[bit] == 1 && IntervalBitsetArray[(bit - 1)] == 0) {
                     pre = bit;
@@ -144,6 +153,7 @@ public:
                 }
             }
 
+            // Create the final entry for the file
             string interval_string = "";
             for (vector<IntervalScheme>::iterator interval = newCompressedIntervalScheme.begin(); interval != newCompressedIntervalScheme.end(); interval++)
             {
@@ -152,6 +162,7 @@ public:
             eval[postOrderNode] = interval_string;
 
         }
+        // Write the results into src/interval_schemes/..
         auto* coutbuf = std::cout.rdbuf();
         cout.rdbuf(out.rdbuf());
         for (unordered_map<int, string>::iterator t = eval.begin(); t != eval.end(); t++) {
@@ -207,7 +218,6 @@ public:
                 string  nodeString;
                 while (getline(linestream, nodeString, ',')) {
                     node = stoi(nodeString);
-                    this->nodeHasPostorder[counter] = node;
                     this->postOrderWithIndex[node] = counter;
                     this->postOrder.push_back(node);
                     counter++;
@@ -239,13 +249,17 @@ int main(int argc, char **argv){
         cout<<"Conversion failure: "<< argv[1] << " is not a number \n"; 
         return 0;
     }
+
     string fileName = argv[2];
     Graph* SocialGeoGraph = new Graph();
 
 
     bool filesRead = SocialGeoGraph->readFiles(fileName);
     if (!filesRead) return 0;
+    //Create regular interval Scheme
     SocialGeoGraph->graphPropagation(fileName, false);
+
+    //Create reversed interval scheme
     SocialGeoGraph->graphPropagation(fileName, true);
 
 
