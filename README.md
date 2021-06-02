@@ -9,4 +9,10 @@
 2. Run command **./IntervalSchemeCreator {number of threads} {filename}** where filename = **foursquareDi**
  => **./IntervalSchemeCreator 32 foursquareDi**
 
+## Input Files 
+- File containing Postorder (already precomputed)
+- File containing reduced Graph (already precomputed)
 
+## Output Files
+- Interval Scheme
+- Reversed Interval Scheme
