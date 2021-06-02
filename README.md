@@ -1,7 +1,7 @@
 # Interval Scheme Creator using OpenMP
 
-##Requirements 
-Boost
+## Requirements 
+- Boost
 
 ## Getting Started
 
