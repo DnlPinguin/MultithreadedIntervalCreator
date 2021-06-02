@@ -160,7 +160,7 @@ public:
         cout.rdbuf(coutbuf);
     }
 
-    void readFiles(string fileName)
+    bool readFiles(string fileName)
     {
         cout << "Reading Files...\n";
         ifstream reduced_graph_file;
@@ -192,7 +192,8 @@ public:
         }
         else
         {
-            cout << "Reduced Graph file couldnt be opened \n";
+            cout << "Reduced Graph doesnt exist \n";
+            return false;
         }
 
         ifstream postorder_file;
@@ -212,22 +213,17 @@ public:
                     counter++;
                 }
             }
-            cout << this->postOrder.size() << endl;
             postorder_file.close();
             cout << "\tPostorder file read.\n";
         }
         else
         {
-            cout << "Postorder file couldnt be opened \n";
+            cout << "Postorder file  doesnt exist \n";
+            return false;
         }
         postorder_file.close();
-
-
-
-
-
-
-
+        cout << "All Files Read";
+        return true;
     } 
 };
 
@@ -247,7 +243,8 @@ int main(int argc, char **argv){
     Graph* SocialGeoGraph = new Graph();
 
 
-    SocialGeoGraph->readFiles(fileName);
+    bool filesRead = SocialGeoGraph->readFiles(fileName);
+    if (!filesRead) return 0;
     SocialGeoGraph->graphPropagation(fileName, false);
     SocialGeoGraph->graphPropagation(fileName, true);
 
